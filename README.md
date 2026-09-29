@@ -618,9 +618,9 @@ EdgeAgent Hub 是物网联边缘计算产品矩阵的一部分，以下项目共
 | **EdgeLiteGateway-Go** | 高性能边缘网关（Go），吞吐量更高，适合 x86/ARM64 工业主机 | [Gitee](https://gitee.com/suoten/EdgeLiteGateway-Go) · [GitHub](https://github.com/suoten/EdgeLiteGateway-Go) |
 | **EdgeAgent Hub** | 边缘智能体管理平台 — 边缘 AI 推理 + RAG + 多智能体编排（本项目） | [Gitee](https://gitee.com/suoten/edgeagent-hub) · [GitHub](https://github.com/suoten/EdgeAgent-Hub) |
 | **GBDoctor** | 国标 GB/T 28181 协议诊断工具，摄像头/ NVR 接入测试与故障排查 | [Gitee](https://gitee.com/suoten/GBDoctor) · [GitHub](https://github.com/suoten/GBDoctor) |
-| **PyGBSentry** | 国标 GB/T 28181 安全审计与合规检查工具 | [Gitee](https://gitee.com/suoten/PyGBSentry) · [GitHub](https://github.com/suoten/PyGBSentry) |
+| **PyGBSentry** | 开箱即用的国标 GB/T 28181-2022 视频管理平台 · 纯 Python 自研 SIP 栈 · FastAPI + Vue 3 + ZLMediaKit | [Gitee](https://gitee.com/suoten/PyGBSentry) · [GitHub](https://github.com/suoten/PyGBSentry) |
 
-> **典型组合**：EdgeLiteGateway 采集传感器数据 → EdgeAgent Hub 边缘 AI 推理与告警 → GBDoctor 接入摄像头视觉确认
+> **典型组合**：EdgeLiteGateway 采集传感器数据 → EdgeAgent Hub 边缘 AI 推理与告警 → PyGBSentry 接入国标摄像头视频确认 → GBDoctor 诊断排查 GB/T 28181 协议故障
 
 ---
 
