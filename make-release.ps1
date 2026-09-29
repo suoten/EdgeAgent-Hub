@@ -267,6 +267,6 @@ Write-Host "  3. sudo bash install.sh" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Windows deploy:" -ForegroundColor Yellow
 Write-Host "  1. Unzip edgeagent-hub-$Version-windows-amd64.zip" -ForegroundColor Yellow
-Write-Host "  2. Open PowerShell as Administrator" -ForegroundColor Yellow
-Write-Host "  3. edgeagent-hub.exe -config config.yaml" -ForegroundColor Yellow
+Write-Host "  2. Double-click edgeagent-hub.exe" -ForegroundColor Yellow
+Write-Host "  3. Browser opens automatically at http://localhost:8080" -ForegroundColor Yellow
 Write-Host ""

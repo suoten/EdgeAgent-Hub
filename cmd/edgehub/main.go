@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -586,6 +588,15 @@ func main() {
 	healthChecker.SetStartupReady(true)
 	logEntry.Infof("EdgeAgent Hub v%s started on %s:%d", version, cfg.Server.Host, cfg.Server.Port)
 
+	// Windows 双击启动时自动打开浏览器
+	if runtime.GOOS == "windows" {
+		url := fmt.Sprintf("http://localhost:%d", cfg.Server.Port)
+		go func() {
+			time.Sleep(2 * time.Second) // 等服务就绪
+			openBrowser(url)
+		}()
+	}
+
 	// 启动 HTTP 服务器
 	go func() {
 		addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
@@ -977,4 +988,21 @@ func registerBuiltinAgentHandlers(bridge *messaging.Bridge, store *storage.Store
 		msg.Respond(resp)
 	})
 	logger.Info("Built-in agent handler registered: rag.index")
+}
+
+// openBrowser 跨平台打开默认浏览器
+func openBrowser(url string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default: // linux 等
+		// 优先尝试 xdg-open，失败则尝试 x-www-browser
+		cmd = exec.Command("xdg-open", url)
+	}
+	if err := cmd.Start(); err != nil {
+		logrus.Warnf("Failed to open browser: %v", err)
+	}
 }

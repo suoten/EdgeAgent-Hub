@@ -163,13 +163,11 @@ sudo bash install.sh
 
 ```powershell
 # 1. 下载 edgeagent-hub-1.0.0-windows-amd64.zip 并解压
-# 2. 打开 PowerShell，进入解压目录
-# 3. 运行
-.\edgeagent-hub.exe -config config.yaml
-
-# 4. 打开浏览器访问 http://localhost:8080
+# 2. 双击 edgeagent-hub.exe
+# 3. 浏览器自动打开 http://localhost:8080
 #    初始账号: admin  密码: admin123
 #    ⚠ 首次登录后请立即修改密码（右上角个人信息 → 修改密码）
+# 4. 关闭控制台窗口即可停止服务
 ```
 
 > **注意**: EdgeAgent Hub 依赖 NATS Server 作为消息骨干。Linux 安装脚本会自动下载安装 NATS；Windows 用户需手动安装 NATS ([下载地址](https://github.com/nats-io/nats-server/releases))。
