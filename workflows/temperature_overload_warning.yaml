@@ -1,0 +1,33 @@
+# 温度异常告警工作流
+# 当温度传感器数据持续超限时，触发 ONNX 推理预测趋势，RAG 生成处置建议
+name: temperature_overload_warning
+trigger:
+  source: mqtt
+  topic: sensors/temperature/+/+
+  condition: "value > 60"
+
+steps:
+  - id: temp_predict
+    agent: onnx.inference
+    input:
+      model_id: "temperature_anomaly_v1"
+      inputs: "{{ trigger.payload }}"
+    output: temp_result
+    timeout: 5s
+    on_failure: continue
+
+  - id: rag_advice
+    agent: llm.rag_anchored
+    input:
+      sensor_data: "{{ trigger.payload }}"
+      anomaly_result: "{{ temp_result }}"
+    output: temp_advice
+    timeout: 30s
+    on_failure:
+      agent: template.fallback_alert
+
+  - id: notify
+    agent: notify.multi_channel
+    input:
+      message: "{{ temp_advice }}"
+      channels: ["webhook", "dingtalk"]

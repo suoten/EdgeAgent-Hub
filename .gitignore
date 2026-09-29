@@ -1,0 +1,37 @@
+# ── 规划文档（不推送）──
+EdgeAgent Hub 规划文档.txt
+
+# ── 编译产物 ──
+/edgeagent-hub.exe
+/edgeagent-hub.exe~
+/edgehub.exe
+/edgehub.exe~
+/dist/
+/web/dist/
+
+# ── 运行时数据（不推送）──
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+/data/*.zip
+/data/nats-store/
+/data/vectordb/
+/data/knowledge/*.txt
+/data/ota/*
+
+# ── 日志 ──
+/logs/
+
+# ── 前端依赖 ──
+web-vue/node_modules/
+
+# ── IDE / 编辑器 ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── 操作系统 ──
+.DS_Store
+Thumbs.db

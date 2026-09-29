@@ -1,0 +1,33 @@
+# 电流过载检测工作流
+# 当电流传感器数据异常时，触发 ONNX 推理检测，RAG 生成告警
+name: current_overload_detect
+trigger:
+  source: mqtt
+  topic: sensors/current/+/+
+  condition: "value > 50"
+
+steps:
+  - id: current_detect
+    agent: onnx.inference
+    input:
+      model_id: "current_anomaly_v1"
+      inputs: "{{ trigger.payload }}"
+    output: current_result
+    timeout: 5s
+    on_failure: continue
+
+  - id: rag_alert
+    agent: llm.rag_anchored
+    input:
+      sensor_data: "{{ trigger.payload }}"
+      anomaly_result: "{{ current_result }}"
+    output: alert_message
+    timeout: 30s
+    on_failure:
+      agent: template.fallback_alert
+
+  - id: notify
+    agent: notify.multi_channel
+    input:
+      message: "{{ alert_message }}"
+      channels: ["webhook", "sms"]

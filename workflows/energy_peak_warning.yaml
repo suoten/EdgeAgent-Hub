@@ -1,0 +1,33 @@
+# 能源园区功率预测与调度
+# 当功率传感器数据超过阈值时，触发 ONNX 推理预测趋势，RAG 生成调度建议，多渠道通知
+name: energy_peak_warning
+trigger:
+  source: mqtt
+  topic: sensors/power/+/+
+  condition: "value > 100"
+
+steps:
+  - id: trend_predict
+    agent: onnx.inference
+    input:
+      model_id: "power_trend_predict_v1"
+      inputs: "{{ trigger.payload }}"
+    output: prediction_result
+    timeout: 5s
+    on_failure: continue
+
+  - id: rag_advice
+    agent: llm.rag_anchored
+    input:
+      sensor_data: "{{ trigger.payload }}"
+      anomaly_result: "{{ prediction_result }}"
+    output: dispatch_advice
+    timeout: 30s
+    on_failure:
+      agent: template.fallback_alert
+
+  - id: notify
+    agent: notify.multi_channel
+    input:
+      message: "{{ dispatch_advice }}"
+      channels: ["webhook"]

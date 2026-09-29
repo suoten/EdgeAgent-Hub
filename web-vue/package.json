@@ -1,0 +1,26 @@
+{
+  "name": "edgeagent-hub-web",
+  "version": "1.0.0",
+  "description": "EdgeAgent Hub - 边缘智能体管理平台前端",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "pinia": "^2.3.1",
+    "element-plus": "^2.9.5",
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.9",
+    "echarts": "^5.6.0",
+    "vue-echarts": "^7.0.3",
+    "dayjs": "^1.11.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.1.0"
+  }
+}

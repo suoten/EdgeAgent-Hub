@@ -1,0 +1,43 @@
+# 振动异常检测 → RAG 告警
+# 当振动传感器数据异常时，触发 ONNX 推理 + LLM 分析 + 通知
+name: vibration_visual_confirm
+trigger:
+  source: mqtt
+  topic: sensors/vibration/+/+
+  condition: "value > 4.5"
+
+steps:
+  - id: anomaly_detect
+    agent: onnx.inference
+    input:
+      model_id: "vibration_anomaly_v1"
+      inputs: "{{ trigger.payload }}"
+    output: anomaly_result
+    timeout: 5s
+    on_failure: continue
+
+  - id: vision_confirm
+    agent: vision.camera_check
+    input:
+      camera_id: "{{ trigger.metadata.camera_id }}"
+      check_type: "bearing_wear"
+    output: vision_result
+    timeout: 2s
+    on_failure: continue
+
+  - id: rag_alert
+    agent: llm.rag_anchored
+    input:
+      sensor_data: "{{ trigger.payload }}"
+      anomaly_result: "{{ anomaly_result }}"
+      vision_result: "{{ vision_result }}"
+    output: alert_message
+    timeout: 30s
+    on_failure:
+      agent: template.fallback_alert
+
+  - id: notify
+    agent: notify.multi_channel
+    input:
+      message: "{{ alert_message }}"
+      channels: ["dingtalk", "sms", "webhook"]

@@ -1,0 +1,36 @@
+[Unit]
+Description=EdgeAgent Hub - 边缘智能体管理平台
+Documentation=https://github.com/edgelite/edgeagent-hub
+After=network.target nats-server.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=edgeagent
+Group=edgeagent
+EnvironmentFile=/etc/edgeagent-hub/env
+ExecStart=/opt/edgeagent-hub/edgeagent-hub -config /etc/edgeagent-hub/config.yaml
+WorkingDirectory=/opt/edgeagent-hub
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+# 安全加固
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/edgeagent-hub /var/log/edgeagent-hub /etc/edgeagent-hub
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# 资源限制
+LimitNPROC=65535
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=edgeagent-hub
+
+[Install]
+WantedBy=multi-user.target

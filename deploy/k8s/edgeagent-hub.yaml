@@ -1,0 +1,223 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edgeagent-hub
+  labels:
+    app.kubernetes.io/name: edgeagent-hub
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edgeagent-hub-config
+  namespace: edgeagent-hub
+data:
+  config.yaml: |
+    server:
+      host: "0.0.0.0"
+      port: 8080
+      tls:
+        enabled: false
+    nats:
+      url: "nats://nats.jetstream.svc.cluster.local:4222"
+    mqtt:
+      broker: "tcp://mqtt-mosquitto.mqtt.svc.cluster.local:1883"
+      client_id: "edgeagent-hub"
+    storage:
+      db_path: "/data/edgeagent.db"
+      wal_mode: true
+      retention_days: 30
+    inference:
+      onnx:
+        enabled: true
+        endpoint: "http://onnx-sidecar:50052"
+      llm:
+        enabled: false
+      rag:
+        enabled: false
+    ota:
+      partition_a: "/data/models/partition_a"
+      partition_b: "/data/models/partition_b"
+      active_partition: "A"
+    resource:
+      auto_detect: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: edgeagent-hub-secrets
+  namespace: edgeagent-hub
+type: Opaque
+stringData:
+  jwt_secret: "CHANGE_ME_IN_PRODUCTION"
+  model_signing_key: "CHANGE_ME"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: edgeagent-hub-data
+  namespace: edgeagent-hub
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edgeagent-hub
+  namespace: edgeagent-hub
+  labels:
+    app.kubernetes.io/name: edgeagent-hub
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: edgeagent-hub
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: edgeagent-hub
+    spec:
+      containers:
+        - name: edgehub
+          image: edgeagent-hub:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 50060
+              name: webhook
+              protocol: TCP
+          env:
+            - name: EDGEAGENT_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: edgeagent-hub-secrets
+                  key: jwt_secret
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          volumeMounts:
+            - name: config
+              mountPath: /app/configs
+            - name: data
+              mountPath: /data
+            - name: models
+              mountPath: /models
+            - name: logs
+              mountPath: /app/logs
+            - name: workflows
+              mountPath: /app/workflows
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: edgeagent-hub-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: edgeagent-hub-data
+        - name: models
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: workflows
+          configMap:
+            name: edgeagent-workflows
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edgeagent-hub
+  namespace: edgeagent-hub
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+    - port: 50060
+      targetPort: 50060
+      name: webhook
+  selector:
+    app.kubernetes.io/name: edgeagent-hub
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onnx-sidecar
+  namespace: edgeagent-hub
+  labels:
+    app.kubernetes.io/name: onnx-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: onnx-sidecar
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: onnx-sidecar
+    spec:
+      containers:
+        - name: onnx-sidecar
+          image: edgeagent-onnx-sidecar:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NATS_URL
+              value: "nats://nats.jetstream.svc.cluster.local:4222"
+            - name: MODEL_DIR
+              value: "/models/onnx"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          volumeMounts:
+            - name: models
+              mountPath: /models
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: edgeagent-hub-data
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: edgeagent-hub
+  namespace: edgeagent-hub
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: edgeagent-hub
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

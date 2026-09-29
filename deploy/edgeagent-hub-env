@@ -1,0 +1,5 @@
+# EdgeAgent Hub 环境变量
+# 配置文件路径
+HUB_CONFIG=/etc/edgeagent-hub/config.yaml
+# 时区
+TZ=Asia/Shanghai

@@ -1,0 +1,104 @@
+/* ── 全局变量 ── */
+:root {
+  --eh-bg: #f0f2f5;
+  --eh-sidebar-bg: #001529;
+  --eh-sidebar-active: #1890ff;
+  --eh-primary: #409eff;
+  --eh-success: #67c23a;
+  --eh-warning: #e6a23c;
+  --eh-danger: #f56c6c;
+  --eh-border: #e8e8e8;
+  --eh-text: #303133;
+  --eh-text-secondary: #909399;
+  --eh-radius: 8px;
+  --eh-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --eh-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--eh-bg);
+  color: var(--eh-text);
+}
+
+/* ── 滚动条美化 ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* ── 通用工具类 ── */
+.eh-page {
+  padding: 20px;
+}
+
+.eh-card {
+  background: #fff;
+  border-radius: var(--eh-radius);
+  box-shadow: var(--eh-shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.eh-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.eh-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--eh-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eh-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--eh-text-secondary);
+}
+
+.eh-empty .el-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #dcdfe6;
+}
+
+/* ── 状态指示器 ── */
+.eh-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.eh-status-dot.online { background: var(--eh-success); box-shadow: 0 0 6px rgba(103, 194, 58, 0.5); }
+.eh-status-dot.offline { background: var(--eh-danger); }
+.eh-status-dot.pending { background: var(--eh-warning); }
+.eh-status-dot.degraded { background: #e6a23c; box-shadow: 0 0 6px rgba(230, 162, 60, 0.5); }
+
+/* ── 过渡动画 ── */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .eh-page { padding: 12px; }
+}

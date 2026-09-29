@@ -1,0 +1,213 @@
+server:
+    host: 0.0.0.0
+    port: 9090
+    read_timeout: 30s
+    write_timeout: 30s
+    tls:
+        enabled: false
+        cert_file: ""
+        key_file: ""
+        ca_file: ""
+    cors_origins:
+        - '*'
+nats:
+    url: nats://127.0.0.1:4222
+    creds_file: ""
+    max_memory: 256MB
+    max_store: 1GB
+    max_reconnects: -1
+    reconnect_wait: 2s
+mqtt:
+    broker: tcp://127.0.0.1:1883
+    client_id: edgeagent-hub
+    username: ""
+    password: ""
+    qos: 1
+    keepalive: 1m0s
+    clean_session: false
+    subscribe_topics:
+        - sensors/+/+
+        - devices/+/telemetry
+        - alerts/+/+
+    tls:
+        enabled: false
+        cert_file: ""
+        key_file: ""
+        ca_file: ""
+storage:
+    db_path: data/edgeagent.db
+    wal_mode: true
+    max_connections: 10
+    retention_days: 30
+    audit_retention_days: 180
+    offline_queue_max: 10000
+inference:
+    onnx:
+        enabled: true
+        endpoint: http://127.0.0.1:50052
+        model_dir: models/onnx
+        execution_provider: cpu
+        batch_window: 10ms
+        max_batch_size: 8
+    llm:
+        enabled: false
+        endpoint: http://127.0.0.1:50054
+        model_path: models/llm/qwen3-0.6b-q4_k_m.gguf
+        context_size: 2048
+        max_tokens: 512
+        temperature: 0.3
+        gpu_layers: 0
+        api_enabled: false
+        api_base_url: ""
+        api_key: ""
+        api_model: ""
+        api_timeout: 30s
+        api_system_prompt: 你是一个工业设备运维告警助手。根据传感器数据和检索到的知识，生成准确、简洁的告警消息和运维建议。引用数据必须与提供的传感器读数一致，不要编造数据。
+    rag:
+        enabled: false
+        endpoint: http://127.0.0.1:50055
+        knowledge_dir: data/knowledge
+        vectordb_dir: data/vectordb
+        embedding_model: all-MiniLM-L6-v2
+        embedding_dim: 384
+        top_k: 5
+        anchor_threshold: 0.85
+orchestrator:
+    workflow_dir: workflows
+    max_concurrent: 100
+    default_timeout: 5s
+    heartbeat_interval: 10s
+    health_check_timeout: 30s
+security:
+    jwt_secret: 349565ed80cab5039af81ab37d38e85783480a1afd63d88981f83728b8690df4
+    access_token_ttl: 30m0s
+    refresh_token_ttl: 168h0m0s
+    jwt_algorithm: HS256
+    max_login_attempts: 5
+    lockout_duration: 15m0s
+    rate_limit_per_minute: 60
+    model_signing_pubkey: ""
+    model_signing_key: ""
+    desensitize:
+        enabled: true
+        patterns:
+            - (?:\d{1,3}\.){3}\d{1,3}
+            - ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})
+            - '[A-Z0-9]{10,17}'
+    admin:
+        username: admin
+        password_hash: ""
+ota:
+    partition_a: models/partition_a
+    partition_b: models/partition_b
+    active_partition: A
+    retention_days: 7
+    canary_percent: 10
+    registry_url: ""
+    registry_username: ""
+    registry_password: ""
+northbound:
+    webhook_url: ""
+    webhook_timeout: 10s
+    mqtt:
+        enabled: false
+        broker: ""
+        topic_prefix: edgeagent
+    notify:
+        dingtalk:
+            enabled: false
+            webhook: ""
+        sms:
+            enabled: false
+            api_key: ""
+            api_url: ""
+observability:
+    log_level: info
+    log_format: json
+    log_file: logs/edgeagent.log
+    log_max_size: 10
+    log_max_days: 7
+    metrics_path: /metrics
+    collect_system_metrics: true
+    metrics_interval: 15s
+offline:
+    enabled: true
+    check_interval: 30s
+    check_url: ""
+    retransmit_interval: 10s
+    max_retries: 5
+resource:
+    auto_detect: true
+    min_memory_for_llm: 1024
+    min_memory_for_vision: 4096
+    ram_tiers:
+        minimal: 512
+        basic: 1024
+        standard: 4096
+        full: 8192
+protocols:
+    modbus:
+        enabled: false
+        devices:
+            - device_id: line1.plc1
+              host: 192.168.1.100
+              port: 502
+              unit_id: 1
+              timeout: 3s
+              poll_interval: 1s
+              registers:
+                - name: vibration_rms
+                  address: 0
+                  quantity: 1
+                  func_code: 3
+                  data_type: uint16
+                  scale: 0.1
+                  offset: 0
+                  unit: mm/s
+                - name: temperature
+                  address: 1
+                  quantity: 1
+                  func_code: 3
+                  data_type: int16
+                  scale: 0.1
+                  offset: 0
+                  unit: °C
+    opcua:
+        enabled: false
+        devices:
+            - device_id: energy.meter1
+              endpoint: opc.tcp://192.168.1.200:4840
+              security_mode: none
+              policy: ""
+              cert_file: ""
+              key_file: ""
+              auth_mode: anonymous
+              username: ""
+              password: ""
+              timeout: 5s
+              poll_interval: 2s
+              nodes:
+                - node_id: ns=2;s=Temperature
+                  name: temperature
+                  unit: °C
+                  scale: 0
+                  offset: 0
+                  deadband: 0
+                - node_id: ns=2;s=Power
+                  name: power
+                  unit: kW
+                  scale: 0
+                  offset: 0
+                  deadband: 0
+    ble:
+        enabled: false
+        devices: []
+    onvif:
+        enabled: false
+        devices: []
+    webhook:
+        enabled: false
+        listen_addr: ""
+        path: ""
+        auth_secret: ""
+        allowed_ips: []

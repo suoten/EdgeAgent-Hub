@@ -1,0 +1,212 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "title": "EdgeAgent Hub - Edge AI Monitoring",
+  "tags": ["edgeagent", "edge-ai", "industrial"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Messages In/sec",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "rate(edgeagent_messages_in_total[1m])",
+          "legendFormat": "in/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "green", "value": 10}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Messages Out/sec",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "targets": [
+        {
+          "expr": "rate(edgeagent_messages_out_total[1m])",
+          "legendFormat": "out/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "ops"}
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active Workflows",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "targets": [
+        {
+          "expr": "edgeagent_active_workflows",
+          "legendFormat": "active"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Online Agents",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "targets": [
+        {
+          "expr": "edgeagent_agents_online",
+          "legendFormat": "online"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "targets": [
+        {
+          "expr": "edgeagent_system_cpu_percent",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "percent", "min": 0, "max": 100}
+      }
+    },
+    {
+      "id": 6,
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "targets": [
+        {
+          "expr": "edgeagent_system_memory_bytes",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "bytes"}
+      }
+    },
+    {
+      "id": 7,
+      "title": "Inference Latency (ms)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(edgeagent_inference_latency_ms_bucket[5m]))",
+          "legendFormat": "p95 latency"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(edgeagent_inference_latency_ms_bucket[5m]))",
+          "legendFormat": "p50 latency"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "ms"}
+      }
+    },
+    {
+      "id": 8,
+      "title": "NATS/MQTT Connection Status",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 12, "x": 0, "y": 20},
+      "targets": [
+        {
+          "expr": "edgeagent_nats_connected",
+          "legendFormat": "NATS"
+        },
+        {
+          "expr": "edgeagent_mqtt_connected",
+          "legendFormat": "MQTT"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Offline Queue Length",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 4, "w": 12, "x": 12, "y": 20},
+      "targets": [
+        {
+          "expr": "edgeagent_offline_queue_length",
+          "legendFormat": "queue"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Data Quality Score by Device",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+      "targets": [
+        {
+          "expr": "edgeagent_data_quality_overall",
+          "legendFormat": "{{device_id}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "percentunit", "min": 0, "max": 1}
+      }
+    },
+    {
+      "id": 11,
+      "title": "Alerts by Severity",
+      "type": "bargauge",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [
+        {
+          "expr": "sum by (severity) (edgeagent_alerts_total)",
+          "legendFormat": "{{severity}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Model Load/Unload Operations",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+      "targets": [
+        {
+          "expr": "rate(edgeagent_model_load_total[1h])",
+          "legendFormat": "loads/hr"
+        },
+        {
+          "expr": "rate(edgeagent_model_unload_total[1h])",
+          "legendFormat": "unloads/hr"
+        }
+      ]
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  }
+}

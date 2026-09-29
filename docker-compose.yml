@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  # ── NATS 消息骨干 ──
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    volumes:
+      - nats-data:/data
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+
+  # ── EdgeAgent Hub 主服务 (Go) ──
+  edgeagent-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./configs:/app/configs
+      - ./workflows:/app/workflows
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    environment:
+      - HUB_CONFIG=/app/configs/config.yaml
+    depends_on:
+      - nats
+    restart: unless-stopped
+
+  # ── ONNX 推理服务 (Python) ──
+  inference-onnx:
+    build:
+      context: .
+      dockerfile: Dockerfile.sidecar
+    command: python /app/inference_onnx.py --nats-url nats://nats:4222 --model-dir /models/onnx --provider cpu
+    volumes:
+      - ./ai_sidecar:/app
+      - ./models:/models
+    depends_on:
+      - nats
+    restart: unless-stopped
+
+  # ── LLM + RAG 服务 (Python) ──
+  inference-llm:
+    build:
+      context: .
+      dockerfile: Dockerfile.sidecar
+    command: >
+      python /app/inference_llm.py
+      --nats-url nats://nats:4222
+      --model-path /models/llm/qwen3-0.6b-q4_k_m.gguf
+      --knowledge-dir /data/knowledge
+      --vectordb-dir /data/vectordb
+    volumes:
+      - ./ai_sidecar:/app
+      - ./models:/models
+      - ./data:/data
+    depends_on:
+      - nats
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # ── Prometheus 监控 (可选) ──
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - edgeagent-hub
+    restart: unless-stopped
+    profiles: ["monitoring"]
+
+  # ── Grafana 看板 (可选) ──
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles: ["monitoring"]
+
+volumes:
+  nats-data:
+  grafana-data:
