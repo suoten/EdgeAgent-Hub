@@ -8,6 +8,7 @@ EdgeAgent Hub 规划文档.txt
 /edgehub.exe~
 /dist/
 /web/dist/
+/release/*-pkg/
 
 # ── 运行时数据（不推送）──
 /data/*.db
